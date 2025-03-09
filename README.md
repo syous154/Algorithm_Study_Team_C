@@ -8,6 +8,8 @@
 ```bash
 python -m venv backjoon 
 backjoon/Scripts/acitvate
+git clone ~
+cd .\Algorithm_Study_Team_C\
 pip install -r requirements.txt
 python get_backjoon.py
 ```
