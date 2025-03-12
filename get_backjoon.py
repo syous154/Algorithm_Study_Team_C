@@ -7,18 +7,8 @@ from nbformat.v4 import new_notebook, new_markdown_cell, new_code_cell
 import os
 
 def get_problem_info(problem_number):
-    """
-    백준 문제 번호를 입력받아 해당 문제의 정보를 크롤링하는 함수
-    
-    Args:
-        problem_number (int): 백준 문제 번호
-    
-    Returns:
-        dict: 문제 정보를 담은 딕셔너리
-    """
     problem_url = f"https://www.acmicpc.net/problem/{problem_number}"
     
-    # User-Agent 헤더 추가
     headers = {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
     }
@@ -48,14 +38,10 @@ def get_problem_info(problem_number):
         for i, sample_input in enumerate(soup.select('.sampledata[id^=sample-input]')):
             sample_inputs.append(sample_input.text.strip())
             
-        # 예제 출력 가져오기
         for i, sample_output in enumerate(soup.select('.sampledata[id^=sample-output]')):
             sample_outputs.append(sample_output.text.strip())
         
-        # 난이도 정보 가져오기 (이건 별도로 크롤링 필요)
         difficulty = get_difficulty(problem_number)
-        
-        # 알고리즘 유형 파악 (태그 정보) - 이것도 별도 API 또는 페이지에서 가져와야 함
         algorithm_type = get_algorithm_type(problem_number)
         
         return {
@@ -76,18 +62,6 @@ def get_problem_info(problem_number):
         return None
 
 def get_difficulty(problem_number):
-    """
-    문제 번호를 기반으로 난이도 정보를 가져오는 함수
-    (실제로는 solvedac API 등을 활용할 수 있음)
-    
-    Args:
-        problem_number (int): 백준 문제 번호
-    
-    Returns:
-        str: 난이도 정보 (예: 'Silver 4')
-    """
-    # 실제 구현에서는 solved.ac API를 사용하는 것이 좋습니다
-    # 여기서는 예시로 간단히 구현
     try:
         url = f"https://solved.ac/api/v3/problem/show?problemId={problem_number}"
         headers = {
@@ -117,15 +91,6 @@ def get_difficulty(problem_number):
         return "Unknown"
 
 def get_algorithm_type(problem_number):
-    """
-    문제의 알고리즘 유형을 가져오는 함수
-    
-    Args:
-        problem_number (int): 백준 문제 번호
-    
-    Returns:
-        list: 알고리즘 유형 리스트
-    """
     try:
         url = f"https://solved.ac/api/v3/problem/show?problemId={problem_number}"
         headers = {
@@ -153,15 +118,6 @@ def get_algorithm_type(problem_number):
         return ["Unknown"]
 
 def create_notebook(problem_info):
-    """
-    문제 정보를 바탕으로 Jupyter Notebook 파일을 생성하는 함수
-    
-    Args:
-        problem_info (dict): 문제 정보 딕셔너리
-    
-    Returns:
-        nb: nbformat 노트북 객체
-    """
     nb = new_notebook()
     
     # 문제 정보 마크다운 셀
@@ -228,25 +184,6 @@ if __name__ == "__main__":
     solution()
 """
     nb.cells.append(new_code_cell(code))
-    
-    # 테스트 코드 셀
-    test_code = f"""# 테스트
-sample_input = '''\
-{problem_info['sample_inputs'][0] if problem_info['sample_inputs'] else ''}
-'''
-
-# 테스트 실행
-import io
-import sys
-
-# 표준 입력을 sample_input으로 변경
-sys.stdin = io.StringIO(sample_input)
-
-# 코드 실행
-solution()
-"""
-    nb.cells.append(new_code_cell(test_code))
-    
     # 배운 점 & 어려웠던 점 마크다운 셀
     learned_md = """# 🧐 배운 점 & 어려웠던 점
 - 
@@ -262,24 +199,20 @@ solution()
     
     return nb
 
-def save_notebook(notebook, problem_number, title):
-    """
-    노트북을 파일로 저장하는 함수
-    
-    Args:
-        notebook: nbformat 노트북 객체
-        problem_number (int): 문제 번호
-        title (str): 문제 제목
-    
-    Returns:
-        str: 저장된 파일 경로
-    """
+def save_notebook(notebook, problem_number, title, algorithm_type):
     # 파일명에 사용할 수 없는 문자 제거
     safe_title = re.sub(r'[\\/*?:"<>|]', "", title)
     file_name = f"BOJ_{problem_number}_{safe_title}.ipynb"
     
-    # 저장 디렉토리 설정 (원하는 경로로 수정 가능)
-    save_dir = "BOJ_Problems"
+    # 알고리즘 유형으로 저장 디렉토리 설정
+    if isinstance(algorithm_type, list) and algorithm_type:
+        # 리스트인 경우 첫 번째 알고리즘 유형을 디렉토리 이름으로 사용
+        save_dir = re.sub(r'[\\/*?:"<>|]', "", algorithm_type[0])
+    else:
+        # 문자열이거나 빈 리스트인 경우 그대로 사용
+        save_dir = re.sub(r'[\\/*?:"<>|]', "", algorithm_type if isinstance(algorithm_type, str) else "기타")
+    
+    # 디렉토리가 없으면 생성
     os.makedirs(save_dir, exist_ok=True)
     
     file_path = os.path.join(save_dir, file_name)
@@ -290,9 +223,6 @@ def save_notebook(notebook, problem_number, title):
     return file_path
 
 def main():
-    """
-    메인 함수
-    """
     try:
         problem_number = int(input("백준 문제 번호를 입력하세요: "))
         
@@ -307,7 +237,7 @@ def main():
             print("\nJupyter Notebook 파일 생성 중...")
             notebook = create_notebook(problem_info)
             
-            file_path = save_notebook(notebook, problem_number, problem_info['title'])
+            file_path = save_notebook(notebook, problem_number, problem_info['title'], problem_info['algorithm_type'])
             print(f"\n파일이 성공적으로 저장되었습니다: {file_path}")
         else:
             print("문제 정보를 가져오는데 실패했습니다.")
