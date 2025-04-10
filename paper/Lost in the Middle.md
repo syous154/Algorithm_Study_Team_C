@@ -33,6 +33,8 @@
 
 * `Reordering`은 말그래도 순서를 다시 매기는 방법으로 만약, Rag system을 구축했을때, LLM에 전달되는 문서가 만약 20개라면 중요가 높은 문서는 최대한 입력의 앞과 끝으로 배치하는 기술이다.
 
-* 해당 방법은 `Langchain`의 `LongContextReorder`를 사용하여 구현할수 있다[관련 제세한 정보](https://python.langchain.com/docs/how_to/long_context_reorder/)
+* 해당 방법은 `Langchain`의 `LongContextReorder`를 사용하여 구현할수 있다
+  * [관련 제세한 정보](https://python.langchain.com/docs/how_to/long_context_reorder/)
 
-* 또한, 논문 저자들은 LLM의 활용을 더 극대화 및 후속 연구를 위해 사용된 평가 데이터와 코드를 공개했다.[관련 링크](https://github.com/nelson-liu/lost-in-the-middle)
+* 또한, 논문 저자들은 LLM의 활용을 더 극대화 및 후속 연구를 위해 사용된 평가 데이터와 코드를 공개했다.
+  * [관련 링크](https://github.com/nelson-liu/lost-in-the-middle)
